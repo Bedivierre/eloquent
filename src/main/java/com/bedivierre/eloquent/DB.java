@@ -109,6 +109,7 @@ public class DB implements Closeable {
     public <T extends DBModel> boolean execute(String query, Class<T> model)
             throws SQLException, IOException, InstantiationException, IllegalAccessException {
         Connection conn = null;
+        System.out.println(query);
         if(!isConnected())
             conn = connect();
         if(!isConnected() || conn == null)
@@ -116,6 +117,23 @@ public class DB implements Closeable {
         boolean result =  conn.createStatement().execute(query);
         conn.close();
         return result;
+    }
+    public <T extends DBModel> double executeAggregate(QueryBuilder query, Class<T> model)
+            throws SQLException, IOException, InstantiationException, IllegalAccessException {
+        return executeAggregate(query.toSql(model), model);
+    }
+    public <T extends DBModel> double executeAggregate(String query, Class<T> model)
+            throws SQLException, IOException, InstantiationException, IllegalAccessException {
+        Connection conn = null;
+
+        if(!isConnected())
+            conn = connect();
+        if(!isConnected() || conn == null)
+            throw new SQLException("mysql is not connected");
+        java.sql.ResultSet result = conn.createStatement().executeQuery(query);
+        double res = result.next() ? result.getDouble(1): 0;
+        conn.close();
+        return res;
     }
     
     private <T extends DBModel> ResultSet<T>
@@ -149,8 +167,14 @@ public class DB implements Closeable {
                 if(field.getType().equals(int.class)){
                     field.set(instance, sqlResp.getInt(field.getName()));
                 }
+                if(field.getType().equals(long.class)){
+                    field.set(instance, sqlResp.getLong(field.getName()));
+                }
                 if(field.getType().equals(float.class)){
                     field.set(instance, sqlResp.getFloat(field.getName()));
+                }
+                if(field.getType().equals(double.class)){
+                    field.set(instance, sqlResp.getDouble(field.getName()));
                 }
                 if(field.getType().equals(boolean.class)){
                     field.set(instance, sqlResp.getInt(field.getName()) != 0 );
@@ -158,8 +182,6 @@ public class DB implements Closeable {
             } catch (SQLException ex){
 
             }
-
-
         }
         return instance;
     }
@@ -178,6 +200,10 @@ public class DB implements Closeable {
             throws SQLException, IOException, InstantiationException, IllegalAccessException {
         query().update(update, model);
     }
+    public <T extends DBModel> void insert(Map<String, Object> update, Class<T> model)
+            throws SQLException, IOException, InstantiationException, IllegalAccessException {
+        query().insert(update, model);
+    }
     public <T extends DBModel> void delete(Class<T> model)
             throws SQLException, IOException, InstantiationException, IllegalAccessException {
         query().delete(model);
@@ -189,6 +215,26 @@ public class DB implements Closeable {
     public <T extends DBModel> T first(Class<T> model)
             throws SQLException, IOException, InstantiationException, IllegalAccessException {
         return query().first(model);
+    }
+    public <T extends DBModel> int count(Class<T> model)
+            throws SQLException, IOException, InstantiationException, IllegalAccessException {
+        return query().count(model);
+    }
+    public <T extends DBModel> double min(String column, Class<T> model)
+            throws SQLException, IOException, InstantiationException, IllegalAccessException {
+        return query().min(column, model);
+    }
+    public <T extends DBModel> double max(String column, Class<T> model)
+            throws SQLException, IOException, InstantiationException, IllegalAccessException {
+        return query().max(column, model);
+    }
+    public <T extends DBModel> double avg(String column, Class<T> model)
+            throws SQLException, IOException, InstantiationException, IllegalAccessException {
+        return query().avg(column, model);
+    }
+    public <T extends DBModel> double sum(String column, Class<T> model)
+            throws SQLException, IOException, InstantiationException, IllegalAccessException {
+        return query().sum(column, model);
     }
 
     //==== wrappers for queryBuilder

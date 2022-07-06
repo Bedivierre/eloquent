@@ -18,19 +18,25 @@ public class Main {
         System.out.println("Hello world!");
         DB conn = new DB("localhost", "ins", "root", "");
         QueryBuilder query = conn.query();
+
+
         query.where("credentials", DBWhereOp.LIKE, "qw%")
             .orWhere((q) -> {
-                q.where("credentials", DBWhereOp.LIKE, "Na%")
+                q.whereNot("credentials", DBWhereOp.LIKE, "Na%")
                     .where("time", DBWhereOp.GE, 4);
             });
 
+
+        double v = query.min("time", TestModel.class);
+        Map<String, Object> update = new HashMap<>();
+        update.put("type", 2);
+        query.insert(update, TestModel.class);
         String s = query.toSql(TestModel.class);
 
         System.out.println(s);
-        Map<String, Object> update = new HashMap<>();
-        update.put("type", 2);
         ResultSet<TestModel> result =  query.get(TestModel.class);
-        query.update(update, TestModel.class);
+
+        //query.update(update, TestModel.class);
         result =  query.get(TestModel.class);
         TestModel r =  conn.find(102, TestModel.class);
         System.exit(0);

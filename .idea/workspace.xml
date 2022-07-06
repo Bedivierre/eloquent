@@ -4,23 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cabd9d32-51d1-4068-bf5d-8cdf1f368880" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/uiDesigner.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bedivierre/Main.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bedivierre/eloquent/DB.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bedivierre/eloquent/QueryBuilder.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bedivierre/eloquent/ResultSet.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bedivierre/eloquent/TestModel.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bedivierre/eloquent/expr/DBQueryExpr.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bedivierre/eloquent/expr/DBQueryWhere.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bedivierre/eloquent/expr/DBWhereOp.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bedivierre/eloquent/model/DBModel.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/bedivierre/eloquent/utils/Util.java" afterDir="false" />
+    <list default="true" id="cabd9d32-51d1-4068-bf5d-8cdf1f368880" name="Changes" comment="initial commit">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bedivierre/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/bedivierre/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bedivierre/eloquent/DB.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/bedivierre/eloquent/DB.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bedivierre/eloquent/QueryBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/bedivierre/eloquent/QueryBuilder.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bedivierre/eloquent/expr/DBQueryWhere.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/bedivierre/eloquent/expr/DBQueryWhere.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -50,15 +39,18 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;MavenSettings&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.0",
+    "settings.editor.selected.configurable": "MavenSettings"
   }
-}</component>
+}]]></component>
   <component name="RunManager">
     <configuration name="Main" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.bedivierre.Main" />
@@ -89,8 +81,16 @@
       <updated>1656672774288</updated>
       <workItem from="1656672775702" duration="11587000" />
       <workItem from="1656918857030" duration="7606000" />
-      <workItem from="1657091401036" duration="10429000" />
+      <workItem from="1657091401036" duration="19786000" />
     </task>
+    <task id="LOCAL-00001" summary="initial commit">
+      <created>1657102650247</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1657102650248</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -107,23 +107,22 @@
       </map>
     </option>
   </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="initial commit" />
+    <option name="LAST_COMMIT_MESSAGE" value="initial commit" />
+  </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/com/bedivierre/Main.java</url>
           <line>35</line>
-          <option name="timeStamp" value="15" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/com/bedivierre/eloquent/QueryBuilder.java</url>
-          <line>76</line>
-          <option name="timeStamp" value="20" />
+          <option name="timeStamp" value="22" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/com/bedivierre/Main.java</url>
-          <line>31</line>
-          <option name="timeStamp" value="21" />
+          <line>32</line>
+          <option name="timeStamp" value="24" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

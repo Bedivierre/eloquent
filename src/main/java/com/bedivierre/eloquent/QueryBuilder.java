@@ -19,12 +19,16 @@ public class QueryBuilder {
 
     private DB connector;
     private List<String> columns;
+    private List<String> orderByColumns;
+    private boolean orderByAsc;
     private String queryType = "select";
     private boolean changed = true;
     private DBQueryWhere parentWhere;
+    private boolean distinct = false;
     private Stack<DBQueryWhere> currentWhereStack;
     private Map<String, Object> querySetColumns;
     String queryText = "";
+    String aggregateColumn = "";
     private int limit = -1;
 
 
@@ -55,10 +59,15 @@ public class QueryBuilder {
             return queryText;
         if(getQueryType().equals("select"))
             queryText = buildSelectQuery(model);
+        if(getQueryType().equals("insert"))
+            queryText = buildInsertQuery(model);
         if(getQueryType().equals("update"))
             queryText = buildUpdateQuery(model);
         if(getQueryType().equals("delete"))
             queryText = buildDeleteQuery(model);
+        if(getQueryType().equals("count") || getQueryType().equals("min") || getQueryType().equals("max")
+                || getQueryType().equals("avg") || getQueryType().equals("sum"))
+            queryText = buildAggregateQuery(getQueryType(), aggregateColumn, model);
         changed = false;
         return queryText;
     }
@@ -94,7 +103,10 @@ public class QueryBuilder {
         }
 
         StringBuilder b = new StringBuilder();
-        b.append("SELECT ").append(processColumns()).append(" FROM ");
+        b.append("SELECT ");
+        if(distinct)
+            b.append("DISTINCT ");
+        b.append(processColumns()).append(" FROM ");
         b.append(Util.processIdentifier(table));
 
         if(getParentWhere().getChildren().size() > 0){
@@ -103,6 +115,7 @@ public class QueryBuilder {
         if(limit > 0){
             b.append(" LIMIT ").append(limit);
         }
+        b.append(processOrderBy());
 
         b.append(";");
         return b.toString();
@@ -132,6 +145,40 @@ public class QueryBuilder {
         b.append(";");
         return b.toString();
     }
+    private <T extends DBModel>  String buildInsertQuery(Class<T> model)
+            throws InstantiationException, IllegalAccessException, SQLException {
+        T instance = model.newInstance();
+        String table = instance.getTable();
+        if(table.length() == 0){
+            throw new SQLException("Table is not defined!");
+        }
+        if(querySetColumns == null || querySetColumns.size() == 0)
+            throw new SQLException("Insert parameters is not defined!");
+
+        StringBuilder b = new StringBuilder();
+        b.append("INSERT INTO ").append(Util.processIdentifier(table));
+
+        b.append("(");
+        List<String> keys = Arrays.asList(querySetColumns.keySet().toArray(new String[0]));
+        for(int i = 0; i < keys.size(); i++){
+            b.append(Util.processIdentifier(keys.get(i)));
+            if(i < keys.size() - 1)
+                b.append(", ");
+        }
+        b.append(")");
+        b.append(" VALUES ");
+        b.append("(");
+        List<Object> values = Arrays.asList(querySetColumns.values().toArray());
+        for(int i = 0; i < values.size(); i++){
+            b.append(Util.processValue(values.get(i)));
+            if(i < values.size() - 1)
+                b.append(", ");
+        }
+        b.append(")");
+
+        b.append(";");
+        return b.toString();
+    }
     private <T extends DBModel>  String buildDeleteQuery(Class<T> model)
             throws InstantiationException, IllegalAccessException, SQLException {
         T instance = model.newInstance();
@@ -142,6 +189,31 @@ public class QueryBuilder {
 
         StringBuilder b = new StringBuilder();
         b.append("DELETE FROM ").append(Util.processIdentifier(table));
+
+        if(getParentWhere().getChildren().size() > 0){
+            b.append(" WHERE ").append(getParentWhere().toSql());
+        }
+
+        b.append(";");
+        return b.toString();
+    }
+    private <T extends DBModel>  String buildAggregateQuery(String type, String column, Class<T> model)
+            throws InstantiationException, IllegalAccessException, SQLException {
+
+        T instance = model.newInstance();
+        String table = instance.getTable();
+        if(table.length() == 0){
+            throw new SQLException("Table is not defined!");
+        }
+
+        if(column == null || column.length() == 0)
+            column = instance.getPrimaryKey();
+
+        StringBuilder b = new StringBuilder();
+        b.append("SELECT ").append(StringUtils.upperCase(type))
+                .append("(").append(Util.processIdentifier(column)).append(") AS __number__");
+        b.append(" FROM ");
+        b.append(Util.processIdentifier(table));
 
         if(getParentWhere().getChildren().size() > 0){
             b.append(" WHERE ").append(getParentWhere().toSql());
@@ -169,6 +241,20 @@ public class QueryBuilder {
 
         return b.toString();
     }
+    private String processOrderBy(){
+        if(orderByColumns == null || orderByColumns.size() == 0)
+            return "";
+        StringBuilder b = new StringBuilder();
+        for(int i = 0; i < orderByColumns.size(); i++){
+            String col = orderByColumns.get(i);
+            b.append(Util.processIdentifier(col));
+            if(i < columns.size() - 1){
+                b.append(",");
+            }
+        }
+        b.append(orderByAsc ? " ASC" : " DESC");
+        return b.toString();
+    }
 
 
     //============== common queries
@@ -183,6 +269,14 @@ public class QueryBuilder {
         queryType = "update";
         changed = true;
         querySetColumns = update;
+        return execute(model);
+    }
+
+    public <T extends DBModel> boolean insert(Map<String, Object> insert, Class<T> model)
+            throws SQLException, IOException, InstantiationException, IllegalAccessException {
+        queryType = "insert";
+        changed = true;
+        querySetColumns = insert;
         return execute(model);
     }
     public <T extends DBModel> boolean delete(Class<T> model)
@@ -214,6 +308,17 @@ public class QueryBuilder {
         if(conn == null)
             throw new NullPointerException("Connector is null!");
         return getConnector().execute(query, model);
+    }
+    protected <T extends DBModel> double executeAggregate(Class<T> model)
+            throws SQLException, IOException, InstantiationException, IllegalAccessException {
+        return executeAggregateRaw(toSql(model), model);
+    }
+    protected <T extends DBModel> double executeAggregateRaw(String query, Class<T> model)
+            throws SQLException, IOException, InstantiationException, IllegalAccessException {
+        DB conn = getConnector();
+        if(conn == null)
+            throw new NullPointerException("Connector is null!");
+        return getConnector().executeAggregate(query, model);
     }
 
 
@@ -253,6 +358,43 @@ public class QueryBuilder {
     }
 
 
+    //=================== Aggregate functions
+
+    public <T extends DBModel> int count(Class<T> model)
+            throws SQLException, IOException, InstantiationException, IllegalAccessException {
+        queryType = "count";
+        changed = true;
+        aggregateColumn = null;
+        return (int)executeAggregate(model);
+    }
+    public <T extends DBModel> double max(String column, Class<T> model)
+            throws SQLException, IOException, InstantiationException, IllegalAccessException {
+        queryType = "max";
+        changed = true;
+        aggregateColumn = column;
+        return executeAggregate(model);
+    }
+    public <T extends DBModel> double min(String column, Class<T> model)
+            throws SQLException, IOException, InstantiationException, IllegalAccessException {
+        queryType = "min";
+        changed = true;
+        aggregateColumn = column;
+        return executeAggregate(model);
+    }
+    public <T extends DBModel> double avg(String column, Class<T> model)
+            throws SQLException, IOException, InstantiationException, IllegalAccessException {
+        queryType = "avg";
+        changed = true;
+        aggregateColumn = column;
+        return executeAggregate(model);
+    }
+    public <T extends DBModel> double sum(String column, Class<T> model)
+            throws SQLException, IOException, InstantiationException, IllegalAccessException {
+        queryType = "sum";
+        changed = true;
+        aggregateColumn = column;
+        return executeAggregate(model);
+    }
 
 
 
@@ -265,11 +407,14 @@ public class QueryBuilder {
 
 
 
-    public QueryBuilder where(String column, DBWhereOp op, Object value, boolean and){
-        DBQueryWhere wh = new DBQueryWhere(column, op, value, and);
+    public QueryBuilder where(String column, DBWhereOp op, Object value, boolean and, boolean not){
+        DBQueryWhere wh = new DBQueryWhere(column, op, value, and, not);
         currentWhereStack.peek().addChildren(wh);
         changed = true;
         return this;
+    }
+    public QueryBuilder where(String column, DBWhereOp op, Object value, boolean and){
+        return where(column, op, value, and, false);
     }
     public QueryBuilder where(String column, DBWhereOp op, Object value){
         return where(column, op, value, true);
@@ -280,10 +425,10 @@ public class QueryBuilder {
     public QueryBuilder where(String column, Object value){
         return where(column, DBWhereOp.EQ, value, true);
     }
-    public QueryBuilder where(DBQueryWhere.WhereCallback callback, boolean and){
+    public QueryBuilder where(DBQueryWhere.WhereCallback callback, boolean and, boolean not){
         if(callback == null)
             return this;
-        DBQueryWhere wh = new DBQueryWhere(this, and);
+        DBQueryWhere wh = new DBQueryWhere(this, and, not);
         currentWhereStack.push(wh);
         callback.action(this);
         currentWhereStack.pop();
@@ -291,9 +436,23 @@ public class QueryBuilder {
         changed = true;
         return this;
     }
+    public QueryBuilder where(DBQueryWhere.WhereCallback callback, boolean and){
+        return where(callback, and, false);
+    }
     public QueryBuilder where(DBQueryWhere.WhereCallback callback){
         return where(callback, true);
     }
+
+    public QueryBuilder whereNot(DBQueryWhere.WhereCallback callback){
+        return where(callback, true, true);
+    }
+    public QueryBuilder whereNot(String column, Object value){
+        return where(column, DBWhereOp.EQ, value, true, true);
+    }
+    public QueryBuilder whereNot(String column, DBWhereOp op, Object value){
+        return where(column, op, value, true, true);
+    }
+
 
     public QueryBuilder orWhere(String column, Object value){
         return where(column, DBWhereOp.EQ, value, false);
@@ -305,11 +464,37 @@ public class QueryBuilder {
         return where(callback, false);
     }
 
+    public QueryBuilder orWhereNot(String column, Object value){
+        return where(column, DBWhereOp.EQ, value, false, true);
+    }
+    public QueryBuilder orWhereNot(String column, DBWhereOp op, Object value){
+        return where(column, op, value, false, true);
+    }
+    public QueryBuilder orWhereNot(DBQueryWhere.WhereCallback callback){
+        return where(callback, false, true);
+    }
+
     public QueryBuilder limit (int limit){
         this.limit = limit;
         changed = true;
         return this;
     }
-
+    public QueryBuilder distinct (boolean value){
+        this.distinct = value;
+        changed = true;
+        return this;
+    }
+    public QueryBuilder distinct (){
+        return distinct(true);
+    }
+    public QueryBuilder orderBy(boolean asc, String... columns){
+        orderByAsc = asc;
+        orderByColumns = Arrays.asList(columns);
+        changed = true;
+        return this;
+    }
+    public QueryBuilder orderBy(String... columns){
+        return orderBy(true, columns);
+    }
 
 }
