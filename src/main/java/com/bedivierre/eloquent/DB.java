@@ -84,13 +84,13 @@ public class DB implements Closeable {
         return connection;
     }
 
-    public <T extends DBModel> ResultSet<T> executeQuery(QueryBuilder query, Class<T> model)
+    public <T extends DBModel> ResultSet<T> executeQuery(QueryBuilder<T> query)
             throws SQLException, IOException, InstantiationException, IllegalAccessException {
-        return executeQuery(query.toSql(model), model);
+        return executeQuery(query.toSql(), query.getModel());
     }
     public <T extends DBModel> ResultSet<T> executeQuery(String query, Class<T> model)
             throws SQLException, IOException, InstantiationException, IllegalAccessException {
-        ResultSet<T> list = new ResultSet<>();
+        ResultSet<T> list;
         Connection conn = null;
         if(!isConnected())
             conn = connect();
@@ -102,11 +102,11 @@ public class DB implements Closeable {
         conn.close();
         return list;
     }
-    public <T extends DBModel> boolean execute(QueryBuilder query, Class<T> model)
+    public <T extends DBModel> boolean execute(QueryBuilder<T> query)
             throws SQLException, IOException, InstantiationException, IllegalAccessException {
-        return execute(query.toSql(model), model);
+        return execute(query.toSql());
     }
-    public <T extends DBModel> boolean execute(String query, Class<T> model)
+    public <T extends DBModel> boolean execute(String query)
             throws SQLException, IOException, InstantiationException, IllegalAccessException {
         Connection conn = null;
         System.out.println(query);
@@ -118,11 +118,11 @@ public class DB implements Closeable {
         conn.close();
         return result;
     }
-    public <T extends DBModel> double executeAggregate(QueryBuilder query, Class<T> model)
+    public <T extends DBModel> double executeAggregate(QueryBuilder<T> query)
             throws SQLException, IOException, InstantiationException, IllegalAccessException {
-        return executeAggregate(query.toSql(model), model);
+        return executeAggregate(query.toSql());
     }
-    public <T extends DBModel> double executeAggregate(String query, Class<T> model)
+    public <T extends DBModel> double executeAggregate(String query)
             throws SQLException, IOException, InstantiationException, IllegalAccessException {
         Connection conn = null;
 
@@ -187,65 +187,65 @@ public class DB implements Closeable {
     }
 
 
-    public QueryBuilder query(){
-        return new QueryBuilder(this);
+    public <T extends DBModel> QueryBuilder<T> query(Class<T> model){
+        return new QueryBuilder<T>(this, model);
     }
 
     // ==== wrappers for queries
     public <T extends DBModel> ResultSet<T> get(Class<T> model)
             throws SQLException, IOException, InstantiationException, IllegalAccessException {
-        return query().get(model);
+        return query(model).get(model);
     }
-    public <T extends DBModel> void update(Map<String, Object> update, Class<T> model)
+    public <T extends DBModel> void update(Class<T> model, Map<String, Object> update)
             throws SQLException, IOException, InstantiationException, IllegalAccessException {
-        query().update(update, model);
+        query(model).update(update);
     }
-    public <T extends DBModel> void insert(Map<String, Object> update, Class<T> model)
+    public <T extends DBModel> void insert(Class<T> model, Map<String, Object> update)
             throws SQLException, IOException, InstantiationException, IllegalAccessException {
-        query().insert(update, model);
+        query(model).insert(update);
     }
     public <T extends DBModel> void delete(Class<T> model)
             throws SQLException, IOException, InstantiationException, IllegalAccessException {
-        query().delete(model);
+        query(model).delete();
     }
     public <T extends DBModel> T find(Object id, Class<T> model)
             throws SQLException, IOException, InstantiationException, IllegalAccessException {
-        return query().find(id, model);
+        return query(model).find(id);
     }
     public <T extends DBModel> T first(Class<T> model)
             throws SQLException, IOException, InstantiationException, IllegalAccessException {
-        return query().first(model);
+        return query(model).first();
     }
     public <T extends DBModel> int count(Class<T> model)
             throws SQLException, IOException, InstantiationException, IllegalAccessException {
-        return query().count(model);
+        return query(model).count();
     }
     public <T extends DBModel> double min(String column, Class<T> model)
             throws SQLException, IOException, InstantiationException, IllegalAccessException {
-        return query().min(column, model);
+        return query(model).min(column);
     }
     public <T extends DBModel> double max(String column, Class<T> model)
             throws SQLException, IOException, InstantiationException, IllegalAccessException {
-        return query().max(column, model);
+        return query(model).max(column);
     }
     public <T extends DBModel> double avg(String column, Class<T> model)
             throws SQLException, IOException, InstantiationException, IllegalAccessException {
-        return query().avg(column, model);
+        return query(model).avg(column);
     }
     public <T extends DBModel> double sum(String column, Class<T> model)
             throws SQLException, IOException, InstantiationException, IllegalAccessException {
-        return query().sum(column, model);
+        return query(model).sum(column);
     }
 
     //==== wrappers for queryBuilder
-    public QueryBuilder where(DBQueryWhere.WhereCallback callback){
-        return query().where(callback);
+    public <T extends DBModel> QueryBuilder<T> where(Class<T> model, DBQueryWhere.WhereCallback callback){
+        return query(model).where(callback);
     }
-    public QueryBuilder where(String column, DBWhereOp op, Object value){
-        return query().where(column, op, value);
+    public <T extends DBModel> QueryBuilder<T> where(Class<T> model, String column, DBWhereOp op, Object value){
+        return query(model).where(column, op, value);
     }
-    public QueryBuilder where(String column, Object value){
-        return query().where(column, value);
+    public <T extends DBModel> QueryBuilder<T> where(Class<T> model, String column, Object value){
+        return query(model).where(column, value);
     }
 
 }

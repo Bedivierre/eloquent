@@ -4,12 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="cabd9d32-51d1-4068-bf5d-8cdf1f368880" name="Changes" comment="initial commit">
+    <list default="true" id="cabd9d32-51d1-4068-bf5d-8cdf1f368880" name="Changes" comment="Aggregates, whereNot, insert">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/bedivierre/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/bedivierre/Main.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/bedivierre/eloquent/DB.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/bedivierre/eloquent/DB.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/bedivierre/eloquent/QueryBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/bedivierre/eloquent/QueryBuilder.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/bedivierre/eloquent/expr/DBQueryWhere.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/bedivierre/eloquent/expr/DBQueryWhere.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bedivierre/eloquent/model/DBModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/bedivierre/eloquent/model/DBModel.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -81,7 +81,7 @@
       <updated>1656672774288</updated>
       <workItem from="1656672775702" duration="11587000" />
       <workItem from="1656918857030" duration="7606000" />
-      <workItem from="1657091401036" duration="19786000" />
+      <workItem from="1657091401036" duration="21978000" />
     </task>
     <task id="LOCAL-00001" summary="initial commit">
       <created>1657102650247</created>
@@ -90,7 +90,14 @@
       <option name="project" value="LOCAL" />
       <updated>1657102650248</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Aggregates, whereNot, insert">
+      <created>1657119193395</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1657119193395</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -109,7 +116,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="initial commit" />
-    <option name="LAST_COMMIT_MESSAGE" value="initial commit" />
+    <MESSAGE value="Aggregates, whereNot, insert" />
+    <option name="LAST_COMMIT_MESSAGE" value="Aggregates, whereNot, insert" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -17,7 +17,7 @@ public class Main {
     public static void main(String[] args) throws Exception {
         System.out.println("Hello world!");
         DB conn = new DB("localhost", "ins", "root", "");
-        QueryBuilder query = conn.query();
+        QueryBuilder<TestModel> query = conn.query(TestModel.class);
 
 
         query.where("credentials", DBWhereOp.LIKE, "qw%")
@@ -27,11 +27,11 @@ public class Main {
             });
 
 
-        double v = query.min("time", TestModel.class);
+        double v = query.count();
         Map<String, Object> update = new HashMap<>();
         update.put("type", 2);
-        query.insert(update, TestModel.class);
-        String s = query.toSql(TestModel.class);
+        //query.insert(update);
+        String s = query.toSql();
 
         System.out.println(s);
         ResultSet<TestModel> result =  query.get(TestModel.class);
