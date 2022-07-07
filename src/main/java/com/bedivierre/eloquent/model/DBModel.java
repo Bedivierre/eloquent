@@ -10,7 +10,7 @@ import java.lang.invoke.MethodHandles;
  ** 01.07.2022 14:23
  **********************************/
 public abstract class DBModel {
-    public String getTable() {return "";}
+    public abstract String getTable();
     public String getPrimaryKey(){return "id";}
 
 

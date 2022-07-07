@@ -1,6 +1,8 @@
 package com.bedivierre.eloquent.expr;
 
+import com.bedivierre.eloquent.DB;
 import com.bedivierre.eloquent.QueryBuilder;
+import com.bedivierre.eloquent.model.DBModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,25 +11,26 @@ import java.util.List;
  ** Code by Bedivierre
  ** 04.07.2022 11:03
  **********************************/
-public abstract class DBQueryExpr {
-    protected List<DBQueryExpr> children = new ArrayList<>();
-    protected DBQueryExpr parent;
-    protected QueryBuilder query;
+public abstract class DBQueryExpr<T extends DBModel> {
+    protected List<DBQueryExpr<T>> children = new ArrayList<>();
+    protected DBQueryExpr<T> parent;
+    protected QueryBuilder<T> query;
 
     public abstract String toSql();
-    public List<DBQueryExpr> getChildren() {return children;}
-    public DBQueryExpr getParent() {return parent;}
-    public QueryBuilder getQuery() {return query;}
-    public void setQuery(QueryBuilder query) {
+    public List<DBQueryExpr<T>> getChildren() {return children;}
+    public DBQueryExpr<T> getParent() {return parent;}
+    public QueryBuilder<T> getQuery() {return query;}
+    public DB getConnector() {return query != null ? query.getConnector() : null;}
+    public void setQuery(QueryBuilder<T> query) {
         this.query = query;
-        for (DBQueryExpr expr: getChildren()) {
+        for (DBQueryExpr<T> expr: getChildren()) {
             expr.setQuery(query);
         }
     }
 
 
 
-    public void addChildren(DBQueryExpr expr){
+    public void addChildren(DBQueryExpr<T> expr){
         children.add(expr);
         expr.parent = this;
         setQuery(this.query);
@@ -36,13 +39,13 @@ public abstract class DBQueryExpr {
     protected DBQueryExpr(){
         this(null, null);
     }
-    protected DBQueryExpr(DBQueryExpr parent){
+    protected DBQueryExpr(DBQueryExpr<T> parent){
         this(parent, parent == null ? null : parent.query);
     }
-    protected DBQueryExpr(QueryBuilder query){
+    protected DBQueryExpr(QueryBuilder<T> query){
         this(null, query);
     }
-    protected DBQueryExpr(DBQueryExpr parent, QueryBuilder query){
+    protected DBQueryExpr(DBQueryExpr<T> parent, QueryBuilder<T> query){
         this.parent = parent;
         setQuery(query);
     }

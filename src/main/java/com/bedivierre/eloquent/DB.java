@@ -1,5 +1,7 @@
 package com.bedivierre.eloquent;
 
+import com.bedivierre.eloquent.dialects.MySQLDialect;
+import com.bedivierre.eloquent.dialects.SQLDialect;
 import com.bedivierre.eloquent.expr.DBQueryWhere;
 import com.bedivierre.eloquent.expr.DBWhereOp;
 import com.bedivierre.eloquent.model.DBModel;
@@ -19,24 +21,37 @@ import java.util.Map;
  ** 01.07.2022 14:10
  **********************************/
 public class DB implements Closeable {
+    public final static SQLDialect defaultDialect = new MySQLDialect();
+
     private Connection connection;
     private String host;
     private int port;
     private String username;
     private String password;
     private String database;
+    private SQLDialect dialect;
 
 
     public String getDatabase(){return database;}
     public String getHost(){return host;}
     public int getPort(){return port;}
+    public SQLDialect getDialect() {return dialect;}
 
     public DB(String host, String database, String username, String password){
+        this(host, database, username, password, new MySQLDialect());
+    }
+    public DB(String host, String database, String username, String password, SQLDialect dialect){
         setConnectionUri(host, database);
         setAuth(username, password);
+        this.dialect = dialect == null ? defaultDialect : dialect;
+
     }
     public DB(String host, String database, String username, String password, int port){
         this(host, database, username, password);
+        setPort(port);
+    }
+    public DB(String host, String database, String username, String password, int port, SQLDialect dialect){
+        this(host, database, username, password, dialect);
         setPort(port);
     }
     protected void finalize(){
@@ -84,11 +99,16 @@ public class DB implements Closeable {
         return connection;
     }
 
-    public <T extends DBModel> ResultSet<T> executeQuery(QueryBuilder<T> query)
+    public java.sql.ResultSet executeRaw(String query)
             throws SQLException, IOException, InstantiationException, IllegalAccessException {
-        return executeQuery(query.toSql(), query.getModel());
+        Connection conn = null;
+        if(!isConnected())
+            conn = connect();
+        if(!isConnected() || conn == null)
+            throw new SQLException("mysql is not connected");
+        return conn.createStatement().executeQuery(query);
     }
-    public <T extends DBModel> ResultSet<T> executeQuery(String query, Class<T> model)
+    public <T extends DBModel> ResultSet<T> executeQuery(QueryBuilder<T> query)
             throws SQLException, IOException, InstantiationException, IllegalAccessException {
         ResultSet<T> list;
         Connection conn = null;
@@ -96,17 +116,13 @@ public class DB implements Closeable {
             conn = connect();
         if(!isConnected() || conn == null)
             throw new SQLException("mysql is not connected");
-        java.sql.ResultSet set =  conn.createStatement().executeQuery(query);
+        java.sql.ResultSet set =  conn.createStatement().executeQuery(getDialect().buildQuery(query));
 
-        list = translateSqlResponseToModels(set, model);
+        list = translateSqlResponseToModels(set, query.getModel());
         conn.close();
         return list;
     }
     public <T extends DBModel> boolean execute(QueryBuilder<T> query)
-            throws SQLException, IOException, InstantiationException, IllegalAccessException {
-        return execute(query.toSql());
-    }
-    public <T extends DBModel> boolean execute(String query)
             throws SQLException, IOException, InstantiationException, IllegalAccessException {
         Connection conn = null;
         System.out.println(query);
@@ -114,23 +130,18 @@ public class DB implements Closeable {
             conn = connect();
         if(!isConnected() || conn == null)
             throw new SQLException("mysql is not connected");
-        boolean result =  conn.createStatement().execute(query);
+        boolean result =  conn.createStatement().execute(getDialect().buildQuery(query));
         conn.close();
         return result;
     }
     public <T extends DBModel> double executeAggregate(QueryBuilder<T> query)
             throws SQLException, IOException, InstantiationException, IllegalAccessException {
-        return executeAggregate(query.toSql());
-    }
-    public <T extends DBModel> double executeAggregate(String query)
-            throws SQLException, IOException, InstantiationException, IllegalAccessException {
         Connection conn = null;
-
         if(!isConnected())
             conn = connect();
         if(!isConnected() || conn == null)
             throw new SQLException("mysql is not connected");
-        java.sql.ResultSet result = conn.createStatement().executeQuery(query);
+        java.sql.ResultSet result = conn.createStatement().executeQuery(getDialect().buildQuery(query));
         double res = result.next() ? result.getDouble(1): 0;
         conn.close();
         return res;
@@ -194,7 +205,7 @@ public class DB implements Closeable {
     // ==== wrappers for queries
     public <T extends DBModel> ResultSet<T> get(Class<T> model)
             throws SQLException, IOException, InstantiationException, IllegalAccessException {
-        return query(model).get(model);
+        return query(model).get();
     }
     public <T extends DBModel> void update(Class<T> model, Map<String, Object> update)
             throws SQLException, IOException, InstantiationException, IllegalAccessException {
@@ -238,7 +249,7 @@ public class DB implements Closeable {
     }
 
     //==== wrappers for queryBuilder
-    public <T extends DBModel> QueryBuilder<T> where(Class<T> model, DBQueryWhere.WhereCallback callback){
+    public <T extends DBModel> QueryBuilder<T> where(Class<T> model, DBQueryWhere.WhereCallback<T> callback){
         return query(model).where(callback);
     }
     public <T extends DBModel> QueryBuilder<T> where(Class<T> model, String column, DBWhereOp op, Object value){
@@ -246,6 +257,18 @@ public class DB implements Closeable {
     }
     public <T extends DBModel> QueryBuilder<T> where(Class<T> model, String column, Object value){
         return query(model).where(column, value);
+    }
+    public <T extends DBModel> QueryBuilder<T> whereIn(Class<T> model, String column, Object... values){
+        return query(model).whereIn(column, values);
+    }
+    public <T extends DBModel> QueryBuilder<T> whereNotIn(Class<T> model, String column, Object... values){
+        return query(model).whereNotIn(column, values);
+    }
+    public <T extends DBModel> QueryBuilder<T> whereBetween(Class<T> model, String column, Object value1, Object value2){
+        return query(model).whereBetween(column, value1, value2);
+    }
+    public <T extends DBModel> QueryBuilder<T> whereNotBetween(Class<T> model, String column, Object value1, Object value2){
+        return query(model).whereNotBetween(column, value1, value2);
     }
 
 }

@@ -18,6 +18,13 @@ public final class Util {
         return b.toString();
     }
     public static String processIdentifier(String value){
-        return '`' + value.toString().replace("`", "\\`") + '`';
+        StringBuilder b = new StringBuilder();
+        String[] ids = value.split("\\.");
+        for(int i= 0; i < ids.length; i++){
+            b.append('`').append(ids[i].replace("`", "\\`")).append('`');
+            if(i < ids.length - 1)
+                b.append('.');
+        }
+        return b.toString();
     }
 }

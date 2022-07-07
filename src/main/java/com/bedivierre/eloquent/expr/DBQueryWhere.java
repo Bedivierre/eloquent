@@ -1,15 +1,16 @@
 package com.bedivierre.eloquent.expr;
 
 import com.bedivierre.eloquent.QueryBuilder;
+import com.bedivierre.eloquent.model.DBModel;
 import com.bedivierre.eloquent.utils.Util;
 
 /*********************************
  ** Code by Bedivierre
  ** 04.07.2022 11:01
  **********************************/
-public class DBQueryWhere extends DBQueryExpr {
-    public interface WhereCallback {
-        void action(QueryBuilder query);
+public class  DBQueryWhere<T extends DBModel> extends DBQueryExpr<T> {
+    public interface WhereCallback<T extends DBModel> {
+        void action(QueryBuilder<T> query);
     }
 
     private boolean and = true;
@@ -17,6 +18,7 @@ public class DBQueryWhere extends DBQueryExpr {
     private DBWhereOp op = DBWhereOp.EQ;
     private String column = "";
     private Object value = "";
+    private Object[] values;
 
     public boolean isAnd() {return and;}
     public boolean isNot() {return not;}
@@ -24,11 +26,17 @@ public class DBQueryWhere extends DBQueryExpr {
     public String getOpString() {return op.value;}
     public String getColumn() {return column;}
     public Object getValue() {return value;}
+    public Object[] getValues() {return values;}
     public String getValueString() {return value.toString();}
 
     public DBQueryWhere(String column, DBWhereOp op, Object value, boolean and, boolean not){
         super();
         setParams(column, op, value, and, not);
+    }
+
+    public DBQueryWhere(String column, DBWhereOp op, Object[] valueArr, boolean and, boolean not){
+        super();
+        setParams(column, op, valueArr, and, not);
     }
     public DBQueryWhere(String column, DBWhereOp op, Object value, boolean and){
         super();
@@ -46,15 +54,15 @@ public class DBQueryWhere extends DBQueryExpr {
         super();
         setParams(column, DBWhereOp.EQ, value, true);
     }
-    public DBQueryWhere(QueryBuilder query){
+    public DBQueryWhere(QueryBuilder<T> query){
         super(query);
         setParams("", DBWhereOp.EQ, "", true);
     }
-    public DBQueryWhere(QueryBuilder query, boolean and){
+    public DBQueryWhere(QueryBuilder<T> query, boolean and){
         super(query);
         setParams("", DBWhereOp.EQ, "", and);
     }
-    public DBQueryWhere(QueryBuilder query, boolean and, boolean not){
+    public DBQueryWhere(QueryBuilder<T> query, boolean and, boolean not){
         super(query);
         setParams("", DBWhereOp.EQ, "", and, not);
     }
@@ -70,41 +78,20 @@ public class DBQueryWhere extends DBQueryExpr {
         this.and = and;
         this.not = not;
     }
+
+    public void setParams(String column, DBWhereOp op, Object[] value, boolean and, boolean not){
+        this.column = column;
+        this.op = op;
+        this.values = value;
+        this.and = and;
+        this.not = not;
+    }
     public void setParams(String column, DBWhereOp op, Object value, boolean and){
         setParams(column, op, value, and, false);
     }
 
     @Override
     public String toSql() {
-        StringBuilder b = new StringBuilder();
-
-        if(getChildren().size() > 0) {
-            for (int i = 0; i < getChildren().size(); i++) {
-                DBQueryWhere wh = getChildren().get(i) instanceof DBQueryWhere
-                        ? (DBQueryWhere)getChildren().get(i) : null;
-                if(wh == null)
-                    continue;
-
-                if(i != 0 )
-                    b.append(wh.isAnd() ? " AND " : " OR ");
-
-                if(isNot())
-                    b.append("NOT ");
-                if(wh.getChildren().size() > 0)
-                    b.append('(');
-                b.append(wh.toSql());
-                if(wh.getChildren().size() > 0)
-                    b.append(')');
-            }
-        } else {
-
-            if(isNot())
-                b.append("NOT ");
-            b.append(Util.processIdentifier(getColumn()));
-            b.append(' ').append(getOpString()).append(' ');
-            b.append(Util.processValue(getValue()));
-        }
-
-        return b.toString();
+        return getConnector().getDialect().whereExpr(this);
     }
 }
