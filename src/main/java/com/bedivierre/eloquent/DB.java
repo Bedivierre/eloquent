@@ -118,7 +118,7 @@ public class DB implements Closeable {
             throw new SQLException("mysql is not connected");
         java.sql.ResultSet set =  conn.createStatement().executeQuery(getDialect().buildQuery(query));
 
-        list = translateSqlResponseToModels(set, query.getModel());
+        list = (new DBResolver()).sqlToModels(set, query.getModel());
         conn.close();
         return list;
     }
@@ -147,55 +147,7 @@ public class DB implements Closeable {
         return res;
     }
     
-    private <T extends DBModel> ResultSet<T>
-        translateSqlResponseToModels(java.sql.ResultSet sqlResp, Class<T> model)
-            throws SQLException, InstantiationException, IllegalAccessException {
-        ResultSet<T> list = new ResultSet<>();
-        if(model == null)
-            return list;
-        while(sqlResp.next()){
-            Field[] flist = model.getDeclaredFields();
-            ArrayList<Field> forFill = new ArrayList<>();
-            for (Field field : flist) {
-                if(!StringUtils.startsWith(field.getName(), "__")){
-                    forFill.add(field);
-                }
-            }
-            T instance = createModel(sqlResp, forFill, model);
-            list.add(instance);
-        }
-        return list;
-    }
-    private <T extends DBModel> T createModel(java.sql.ResultSet sqlResp, ArrayList<Field> fields, Class<T> model)
-            throws InstantiationException, IllegalAccessException, SQLException {
-        T instance = model.newInstance();
-        for (Field field : fields) {
-            field.setAccessible(true);
-            try {
-                if(field.getType().equals(String.class)){
-                    field.set(instance, sqlResp.getString(field.getName()));
-                }
-                if(field.getType().equals(int.class)){
-                    field.set(instance, sqlResp.getInt(field.getName()));
-                }
-                if(field.getType().equals(long.class)){
-                    field.set(instance, sqlResp.getLong(field.getName()));
-                }
-                if(field.getType().equals(float.class)){
-                    field.set(instance, sqlResp.getFloat(field.getName()));
-                }
-                if(field.getType().equals(double.class)){
-                    field.set(instance, sqlResp.getDouble(field.getName()));
-                }
-                if(field.getType().equals(boolean.class)){
-                    field.set(instance, sqlResp.getInt(field.getName()) != 0 );
-                }
-            } catch (SQLException ex){
 
-            }
-        }
-        return instance;
-    }
 
 
     public <T extends DBModel> QueryBuilder<T> query(Class<T> model){
