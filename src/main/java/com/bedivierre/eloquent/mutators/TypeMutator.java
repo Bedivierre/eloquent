@@ -98,6 +98,7 @@ public abstract class TypeMutator<T> {
         registerMutator(SqlFieldType.FLOAT.value, new FloatMutator());
         registerMutator(SqlFieldType.DOUBLE.value, new DoubleMutator());
         registerMutator(SqlFieldType.ARRAY.value, new ArrayMutator());
+        registerMutator(SqlFieldType.MAP.value, new MapMutator());
 
 
 
@@ -112,5 +113,7 @@ public abstract class TypeMutator<T> {
         registerDefaultTypeMutator(boolean.class, new BooleanMutator());
         registerDefaultTypeMutator(Boolean.class, new BooleanMutator());
         registerDefaultTypeMutator(String.class, new StringMutator());
+        registerDefaultTypeMutator(List.class, new ArrayMutator());
+        registerDefaultTypeMutator(Map.class, new MapMutator());
     }
 }

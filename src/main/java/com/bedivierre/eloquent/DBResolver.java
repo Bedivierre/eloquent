@@ -53,7 +53,13 @@ public class DBResolver {
             column = a.column();
         SqlFieldType type = a == null ? SqlFieldType.NONE : a.type();
 
-        String fieldValue = sqlResp.getString(column);
+
+        String fieldValue = "";
+        try {
+            fieldValue = sqlResp.getString(column);
+        } catch (Exception ex){
+            return false;
+        }
         TypeMutator mutator = getFieldMutator(field, a);
         if(mutator == null){
             return false;
